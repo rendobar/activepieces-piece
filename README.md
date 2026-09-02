@@ -1,10 +1,31 @@
-# Rendobar for Activepieces
+<p align="center">
+  <a href="https://rendobar.com">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://cdn.rendobar.com/assets/brand/logo-mark.svg">
+      <img alt="Rendobar" src="https://cdn.rendobar.com/assets/brand/logo-mark-black.svg" width="80">
+    </picture>
+  </a>
+</p>
 
-The [Rendobar](https://rendobar.com) piece for [Activepieces](https://www.activepieces.com).
-Published to npm as [`@rendobar/piece-rendobar`](https://www.npmjs.com/package/@rendobar/piece-rendobar).
+<h1 align="center">@rendobar/piece-rendobar</h1>
 
-Submit media jobs, wait for them without polling, upload files, and trigger a
-flow when a job finishes.
+<p align="center">
+  <strong>Media processing for Activepieces.</strong><br>
+  Submit jobs, wait for them without polling, and trigger a flow when one finishes.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@rendobar/piece-rendobar">npm</a> &nbsp;&middot;&nbsp;
+  <a href="https://rendobar.com/docs">Docs</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.activepieces.com">Activepieces</a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@rendobar/piece-rendobar"><img src="https://img.shields.io/npm/v/@rendobar/piece-rendobar?style=flat-square&color=059669&label=npm" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/@rendobar/piece-rendobar"><img src="https://img.shields.io/npm/dm/@rendobar/piece-rendobar?style=flat-square&color=059669" alt="npm downloads"></a>
+  <img src="https://img.shields.io/npm/l/@rendobar/piece-rendobar?style=flat-square&color=059669" alt="MIT license">
+  <a href="https://github.com/rendobar/activepieces-piece/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/rendobar/activepieces-piece/ci.yml?branch=main&style=flat-square&color=059669&label=ci" alt="CI"></a>
+</p>
 
 ## Install
 
