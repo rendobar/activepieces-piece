@@ -1,6 +1,6 @@
 {
   "name": "@rendobar/piece-rendobar",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Rendobar media processing for Activepieces: submit, track and cancel media jobs, upload files, read job logs and account credits, and trigger on job events.",
   "license": "MIT",
   "homepage": "https://rendobar.com",
