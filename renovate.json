@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":dependencyDashboard"
+  ],
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "commitMessageAction": "bump",
+  "schedule": ["before 6am on Monday"],
+  "timezone": "UTC",
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["patch", "minor"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "addLabels": ["dependencies", "major"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "pinDigests": true,
+      "groupName": "github-actions",
+      "automerge": true
+    },
+    {
+      "description": "@activepieces/cli is the bundler that produces the published artifact, and the pieces packages are what it inlines. A bump changes the bytes we ship, so it gets read by a person even when the semver range says patch. CI still has to pass, and verify-artifact.mjs still has to agree, but neither would notice a deliberate upstream change in bundling behaviour.",
+      "matchPackageNames": ["@activepieces/**"],
+      "automerge": false,
+      "addLabels": ["dependencies", "bundler"]
+    }
+  ],
+  "dependencyDashboard": true,
+  "prHourlyLimit": 4,
+  "prConcurrentLimit": 10
+}
