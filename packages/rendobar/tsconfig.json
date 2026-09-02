@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "importHelpers": true,
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@activepieces/pieces-framework": [
+        "../../.ap-src/packages/pieces/framework/src/index.ts"
+      ],
+      "@activepieces/pieces-common": [
+        "../../.ap-src/packages/pieces/common/src/index.ts"
+      ],
+      "@activepieces/core-utils": [
+        "../../.ap-src/packages/core/utils/src/index.ts"
+      ],
+      "@activepieces/core-piece-types": [
+        "../../.ap-src/packages/core/piece-types/src/index.ts"
+      ]
+    },
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
+}

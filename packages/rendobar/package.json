@@ -1,0 +1,31 @@
+{
+  "name": "@rendobar/piece-rendobar",
+  "version": "0.1.0",
+  "description": "Rendobar media processing for Activepieces: submit, track and cancel media jobs, upload files, read job logs and account credits, and trigger on job events.",
+  "license": "MIT",
+  "homepage": "https://rendobar.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rendobar/activepieces-piece.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rendobar/activepieces-piece/issues"
+  },
+  "author": "Rendobar",
+  "keywords": [
+    "activepieces",
+    "activepieces-piece",
+    "rendobar",
+    "ffmpeg",
+    "video",
+    "media"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/src/index.js",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

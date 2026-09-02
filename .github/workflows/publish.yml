@@ -1,0 +1,91 @@
+# Publishes the piece to npm on a version tag.
+#
+# Trusted publishing over OIDC, not a token. Two reasons beyond the obvious one
+# that there is no long-lived secret to leak: npm turns provenance on by itself
+# for an OIDC publish, and there is no 2FA prompt, which is what made publishing
+# this package by hand fail twice.
+#
+# Provenance needs a PUBLIC source repository. npm rejects it from a private one
+# with 422 "Unsupported GitHub Actions source repository visibility: private",
+# which is why the platform monorepo publishes the SDK with --provenance=false
+# and why this piece could never have had provenance while it lived there.
+#
+# One-time setup on npmjs.com, under the package's Settings -> Trusted Publishers:
+#   Owner: rendobar   Repo: activepieces-piece   Workflow: publish.yml
+name: publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+  id-token: write   # the OIDC token npm verifies
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm-publish
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      # Trusted publishing needs npm 11.5.1+. The bundled npm on the runner is
+      # usually older, and an old npm fails by falling back to asking for a
+      # token rather than by saying the version is wrong.
+      - name: Upgrade npm for trusted publishing
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - run: npm ci
+
+      # A tag that disagrees with package.json publishes a version nobody asked
+      # for, under a git ref that does not describe it.
+      - name: Tag must match the package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./packages/rendobar/package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "tag v$TAG does not match package.json $PKG"
+            exit 1
+          fi
+          echo "publishing $PKG"
+
+      - run: npm run ap:fetch
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run bundle
+
+      # The same nine assertions CI runs. Repeated here deliberately: this is
+      # the last point before bytes leave the machine, and a release tag can be
+      # pushed at a commit whose CI never ran.
+      - name: Verify artifact
+        run: npm run verify
+
+      - name: Publish
+        working-directory: packages/rendobar/dist
+        run: npm publish
+
+      # A publish that 200s and then is not resolvable is a real failure mode;
+      # npm's CDN is eventually consistent.
+      - name: Confirm it resolves
+        run: |
+          VERSION="$(node -p "require('./packages/rendobar/package.json').version")"
+          for i in 1 2 3 4 5; do
+            if npm view "@rendobar/piece-rendobar@${VERSION}" version >/dev/null 2>&1; then
+              echo "resolved @rendobar/piece-rendobar@${VERSION}"
+              exit 0
+            fi
+            echo "not visible yet, retry $i"
+            sleep 20
+          done
+          echo "published but never became resolvable"
+          exit 1
