@@ -48,6 +48,17 @@ Version bumps come from release-please. Merging its release PR pushes a tag, and
 the tag triggers a publish to npm over OIDC trusted publishing, with provenance.
 No one publishes by hand, and no token exists to leak.
 
+### The one manual step, once
+
+npm has nowhere to configure a trusted publisher for a package that does not
+exist yet, so the very first version is published by hand. After that, set the
+trusted publisher at
+`npmjs.com/package/@rendobar/piece-rendobar/access` to this repository and the
+`publish.yml` workflow, and no one publishes manually again.
+
+The publish step is idempotent, so the release tag for that first version does
+not fail after the fact: it sees the version already on the registry and exits.
+
 The version reaches the runtime through `scripts/generate-version.mjs`, which
 writes `src/lib/common/version.ts` from `package.json` at build time. It is
 gitignored, so it cannot drift from the manifest.

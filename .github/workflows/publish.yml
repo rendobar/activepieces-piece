@@ -70,9 +70,19 @@ jobs:
       - name: Verify artifact
         run: npm run verify
 
+      # Idempotent on purpose. A tag can be re-pushed, a failed run re-run, and
+      # the very first version has to be published by hand because npm has
+      # nowhere to configure a trusted publisher for a package that does not
+      # exist yet. None of those should turn into a red release.
       - name: Publish
         working-directory: packages/rendobar/dist
-        run: npm publish
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "@rendobar/piece-rendobar@${VERSION}" version >/dev/null 2>&1; then
+            echo "@rendobar/piece-rendobar@${VERSION} is already on the registry, nothing to do"
+            exit 0
+          fi
+          npm publish
 
       # A publish that 200s and then is not resolvable is a real failure mode;
       # npm's CDN is eventually consistent.
