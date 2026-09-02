@@ -1,0 +1,67 @@
+# Everything that has to be true before this piece can ship.
+#
+# It runs the piece's OWN tests, which is the point. While the source lived in
+# the platform monorepo they ran only when a human remembered to invoke the sync
+# script against a local Activepieces checkout, so a regression in the waitpoint
+# path could reach main unnoticed.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # Pinned by .ap-pin. Cached on the pin, so a green run costs one fetch and
+      # a changed pin invalidates it exactly when it should.
+      - name: Read Activepieces pin
+        id: pin
+        run: echo "sha=$(cat .ap-pin)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .ap-src
+          key: ap-src-${{ steps.pin.outputs.sha }}
+
+      - run: npm run ap:fetch
+
+      - name: Typecheck against framework source
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Bundle
+        run: npm run bundle
+
+      # Nine assertions on the artifact npm would actually receive. Mutation
+      # tested: every one of them fails when the thing it checks is broken.
+      - name: Verify artifact
+        run: npm run verify
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: piece-dist
+          path: packages/rendobar/dist
+          retention-days: 7

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    "packages/rendobar": {
+      "release-type": "node",
+      "package-name": "@rendobar/piece-rendobar",
+      "changelog-path": "CHANGELOG.md",
+      "include-component-in-tag": false,
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false
+    }
+  },
+  "$comment": "include-component-in-tag false gives plain v0.1.0 tags, which is what publish.yml matches on and what the community pieces use."
+}

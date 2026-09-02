@@ -1,0 +1,34 @@
+{
+  "name": "activepieces-piece-workspace",
+  "private": true,
+  "description": "Development workspace for @rendobar/piece-rendobar. Not published.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "ap:fetch": "node scripts/fetch-ap.mjs",
+    "version:generate": "node scripts/generate-version.mjs",
+    "typecheck": "npm run version:generate && tsc -p packages/rendobar/tsconfig.json",
+    "test": "npm run version:generate && vitest run --root packages/rendobar",
+    "bundle": "npm run version:generate && node scripts/bundle.mjs",
+    "verify": "node scripts/verify-artifact.mjs",
+    "ci": "npm run ap:fetch && npm run typecheck && npm run test && npm run bundle && npm run verify"
+  },
+  "devDependencies": {
+    "@activepieces/cli": "1.3.2",
+    "@types/node": "22.10.2",
+    "typescript": "5.9.2",
+    "vitest": "3.2.6",
+    "tslib": "2.6.2",
+    "zod": "4.3.6",
+    "ai": "^6.0.0",
+    "semver": "7.6.0",
+    "form-data": "4.0.6",
+    "deepmerge-ts": "7.1.0",
+    "ipaddr.js": "2.3.0",
+    "nanoid": "3.3.17"
+  }
+}
