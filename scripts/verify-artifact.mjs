@@ -67,14 +67,22 @@ check(required.length === 0, `bundle requires non-builtin modules at runtime: ${
 // .cmd on Windows needs a shell, and shell + args is a deprecated injection
 // risk. npm_execpath is set for us because this runs as an npm script.
 const npmCli = process.env.npm_execpath;
-const packed = JSON.parse(
+const packOut = JSON.parse(
   (npmCli
     ? execFileSync(process.execPath, [npmCli, 'pack', '--dry-run', '--json'],
         { cwd: DIST, stdio: ['ignore', 'pipe', 'pipe'] })
     : execFileSync('npm', ['pack', '--dry-run', '--json'],
         { cwd: DIST, stdio: ['ignore', 'pipe', 'pipe'] })
   ).toString(),
-)[0];
+);
+// npm 11.12 returns an array of packed tarballs; newer npm returns an object
+// keyed by package name. Read both rather than pinning an npm version, because
+// the publish workflow deliberately installs the latest npm for OIDC support
+// and would otherwise drift away from whatever is installed locally.
+const packed = Array.isArray(packOut) ? packOut[0] : Object.values(packOut)[0];
+if (!packed?.files) {
+  throw new Error(`could not read the file list from npm pack --json. Got keys: ${Object.keys(packOut)}`);
+}
 const names = packed.files.map((f) => f.path).sort();
 const expected = ['LICENSE', 'README.md', 'package.json', 'src/i18n/translation.json', 'src/index.js'];
 check(JSON.stringify(names) === JSON.stringify(expected),
