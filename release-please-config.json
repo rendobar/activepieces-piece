@@ -7,8 +7,15 @@
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
       "bump-minor-pre-major": true,
-      "bump-patch-for-minor-pre-major": false
+      "bump-patch-for-minor-pre-major": false,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "../../package-lock.json",
+          "jsonpath": "$.packages['packages/rendobar'].version"
+        }
+      ]
     }
   },
-  "$comment": "include-component-in-tag false gives plain v0.1.0 tags, which is what publish.yml matches on and what the community pieces use."
+  "$comment": "include-component-in-tag false gives plain v0.1.0 tags, which is what publish.yml matches on and what the community pieces use. extra-files keeps the ROOT package-lock.json in step: release-type node only updates a lockfile beside the package, and ours is a workspace lock at the repo root, so without this every release leaves npm ci failing with a version mismatch."
 }
