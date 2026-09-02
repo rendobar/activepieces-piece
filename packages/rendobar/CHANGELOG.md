@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/rendobar/activepieces-piece/compare/v0.1.0...v0.1.1) (2026-09-02)
+
+
+### Bug Fixes
+
+* **piece:** give the npm page install instructions and a source link ([f542bd2](https://github.com/rendobar/activepieces-piece/commit/f542bd28848fdc897c3424e18229b94a4f4467ac))
+
 ## 0.1.0 (2026-09-02)
 
 
