@@ -3,6 +3,21 @@
 Media processing and AI generation. Submit FFmpeg commands, burn captions,
 compress to a target size, generate and edit images, and read the result back.
 
+## Install
+
+Activepieces installs custom pieces from npm by package name. On a self-hosted
+instance, add it from **Admin -> Pieces -> Install**:
+
+```
+@rendobar/piece-rendobar
+```
+
+Installing custom pieces is a paid feature on Activepieces Cloud.
+
+You will need a Rendobar API key from [app.rendobar.com](https://app.rendobar.com).
+Source and issues live at
+[github.com/rendobar/activepieces-piece](https://github.com/rendobar/activepieces-piece).
+
 ## Actions
 
 | Action | What it does |
