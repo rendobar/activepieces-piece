@@ -269,9 +269,12 @@ describe('the content type on a presigned PUT', () => {
   it('sends the type the API derived, not one guessed from the filename', async () => {
     const sent = stubApi(derived);
 
-    await uploadFile.run(context(smallFile));
+    const result: any = await uploadFile.run(context(smallFile));
 
     expect(sent.find(isPut)?.headers?.['Content-Type']).toBe('video/mp4');
+    // The step reports the same value it sent, so a later step reading
+    // content_type sees what storage actually holds.
+    expect(result.content_type).toBe('video/mp4');
   });
 
   it('lets the API derive it instead of declaring one at init', async () => {

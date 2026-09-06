@@ -98,10 +98,7 @@ export const uploadFile = createAction({
       ...(checksum === undefined ? {} : { checksum }),
     });
 
-    // A presigned PUT carries no signed Content-Type, so whatever is sent here
-    // is what storage keeps. Echo the API's answer back.
-    //
-    // The fallback is not redundant: an older Rendobar deployment does not
+    // The fallback is not dead code: an older Rendobar deployment does not
     // populate this field, and `application/octet-stream` is what its download
     // path would have derived anyway.
     const contentType = init.data.contentType ?? 'application/octet-stream';
@@ -162,7 +159,7 @@ export const uploadFile = createAction({
       url: init.data.url,
       file_name: name,
       size_bytes: size,
-      content_type: init.data.contentType ?? contentType,
+      content_type: contentType,
       expires_at: init.data.expiresAt ?? null,
       reused_existing: init.status === 'deduplicated',
     };
