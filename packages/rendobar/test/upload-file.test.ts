@@ -16,14 +16,19 @@ import { uploadFile } from '../src/lib/actions/upload-file';
 
 const PART = 8;
 
-type Sent = { method: HttpMethod; url: string; body?: unknown };
+type Sent = { method: HttpMethod; url: string; body?: unknown; headers?: Record<string, string> };
 
 function stubApi(
   reply: (sent: Sent) => { status: number; body?: unknown; headers?: Record<string, string> },
 ) {
   const sent: Sent[] = [];
   vi.spyOn(httpClient, 'sendRequest').mockImplementation(async (request: any) => {
-    const record: Sent = { method: request.method, url: request.url, body: request.body };
+    const record: Sent = {
+      method: request.method,
+      url: request.url,
+      body: request.body,
+      headers: request.headers,
+    };
     sent.push(record);
     const { status, body, headers } = reply(record);
     return { status, body, headers: headers ?? {} } as any;
@@ -229,5 +234,51 @@ describe('a file already stored', () => {
 
     expect(sent.filter(isPut)).toHaveLength(0);
     expect(result.reused_existing).toBe(true);
+  });
+});
+
+/**
+ * The API owns the stored content type.
+ *
+ * A presigned PUT does not carry a signed Content-Type, so whatever this piece
+ * sends is what storage keeps. Guessing from the filename put a second, drifting
+ * MIME table in the piece, and it mapped .svg to image/svg+xml, which the API
+ * deliberately refuses because outputs serve from a CDN.
+ */
+describe('the content type on a presigned PUT', () => {
+  const derived = (r: Sent) =>
+    isInit(r)
+      ? {
+          status: 201,
+          body: {
+            status: 'presigned',
+            // ".bin" is not in any media table, so a filename guess could only
+            // ever produce application/octet-stream here. The API knows better.
+            data: {
+              id: 'ast_1',
+              url: 'https://api.rendobar.com/assets/ast_1/content',
+              contentType: 'video/mp4',
+            },
+            upload: { method: 'PUT', url: 'https://storage/put', expiresAt: 0 },
+          },
+        }
+      : ETAG;
+
+  const smallFile = { filename: 'clip.bin', size: 4, body: Readable.from(Buffer.alloc(4, 1)) };
+
+  it('sends the type the API derived, not one guessed from the filename', async () => {
+    const sent = stubApi(derived);
+
+    await uploadFile.run(context(smallFile));
+
+    expect(sent.find(isPut)?.headers?.['Content-Type']).toBe('video/mp4');
+  });
+
+  it('lets the API derive it instead of declaring one at init', async () => {
+    const sent = stubApi(derived);
+
+    await uploadFile.run(context(smallFile));
+
+    expect(sent.find(isInit)?.body).not.toHaveProperty('contentType');
   });
 });
