@@ -5,7 +5,7 @@ import { rendobarAuth } from '../auth';
 import { createHash } from 'node:crypto';
 import { Readable } from 'node:stream';
 import { buffer as readableToBuffer } from 'node:stream/consumers';
-import { rendobar, putBytes, contentTypeFor, type AssetInit } from '../common/client';
+import { rendobar, putBytes, type AssetInit } from '../common/client';
 
 /**
  * Get a file out of the flow and into Rendobar.
@@ -64,7 +64,6 @@ export const uploadFile = createAction({
     const { file, filename, keep } = context.propsValue;
 
     const name = filename?.trim() ? filename.trim() : file.filename;
-    const contentType = contentTypeFor(name, file.extension);
 
     // `POST /assets` needs the size up front: it is what decides a single
     // presigned PUT from a multipart upload, and it fixes the part boundaries.
@@ -89,13 +88,23 @@ export const uploadFile = createAction({
       body = Readable.from(measured);
     }
 
+    // No contentType: Rendobar derives it from the filename with the same map
+    // its download path uses, and returns it below. Declaring one here would be
+    // this piece guessing at something the API already knows.
     const init = await rendobar<AssetInit>(token, HttpMethod.POST, '/assets', {
       filename: name,
       size,
-      contentType,
       lifecycle: keep ? 'persisted' : 'ephemeral',
       ...(checksum === undefined ? {} : { checksum }),
     });
+
+    // A presigned PUT carries no signed Content-Type, so whatever is sent here
+    // is what storage keeps. Echo the API's answer back.
+    //
+    // The fallback is not redundant: an older Rendobar deployment does not
+    // populate this field, and `application/octet-stream` is what its download
+    // path would have derived anyway.
+    const contentType = init.data.contentType ?? 'application/octet-stream';
 
     // Rendobar answers `deduplicated` when a ready asset already carries this
     // checksum, and there is nothing left to send. Only reachable when a

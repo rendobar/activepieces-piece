@@ -164,53 +164,6 @@ export type AssetInit = {
     | { uploadId: string; partSize: number; parts: { partNumber: number; url: string }[]; expiresAt: number };
 };
 
-/**
- * A storage content type for an uploaded file.
- *
- * Only the media this API actually processes is listed; anything else is
- * binary, which is both true and safe. What matters is that the result is
- * never a text or JSON type for a file that is neither.
- */
-export function contentTypeFor(filename: string, extension: string | undefined): string {
-  const ext = (extension ?? filename.split('.').pop() ?? '').toLowerCase();
-  return MEDIA_CONTENT_TYPES[ext] ?? 'application/octet-stream';
-}
-
-const MEDIA_CONTENT_TYPES: Record<string, string> = {
-  mp4: 'video/mp4',
-  m4v: 'video/mp4',
-  mov: 'video/quicktime',
-  webm: 'video/webm',
-  mkv: 'video/x-matroska',
-  avi: 'video/x-msvideo',
-  mpeg: 'video/mpeg',
-  mpg: 'video/mpeg',
-  png: 'image/png',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  webp: 'image/webp',
-  gif: 'image/gif',
-  avif: 'image/avif',
-  heic: 'image/heic',
-  tiff: 'image/tiff',
-  bmp: 'image/bmp',
-  svg: 'image/svg+xml',
-  mp3: 'audio/mpeg',
-  wav: 'audio/wav',
-  m4a: 'audio/mp4',
-  aac: 'audio/aac',
-  ogg: 'audio/ogg',
-  opus: 'audio/opus',
-  flac: 'audio/flac',
-  srt: 'application/x-subrip',
-  vtt: 'text/vtt',
-  ttf: 'font/ttf',
-  otf: 'font/otf',
-  ttc: 'font/collection',
-  woff: 'font/woff',
-  woff2: 'font/woff2',
-};
-
 // ── Idempotent submission ───────────────────────────────────────
 
 /**
