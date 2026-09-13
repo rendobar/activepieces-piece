@@ -46,16 +46,17 @@ function withoutBlock(source, key) {
 /**
  * Translatable strings in one piece source file.
  *
- * Single-quoted literals only, which is what this codebase uses. A template
- * literal is interpolated at runtime and has no stable key, so it is not
- * translatable; skipping it is correct rather than a gap.
+ * Single- and double-quoted literals, which is what this codebase uses. A
+ * template literal is interpolated at runtime and has no stable key, so it is
+ * not translatable; skipping it is correct rather than a gap.
  */
 export function stringsFrom(source) {
   const cleaned = withoutBlock(withoutBlock(source, "aiMetadata"), "outputSchema");
   const found = [];
-  const pattern = /(?:displayName|description|label):\s*'((?:[^'\\]|\\.)*)'/g;
+  const pattern = /(?:displayName|description|label):\s*(['"])((?:(?!\1)[^\\]|\\.)*)\1/g;
   for (let m; (m = pattern.exec(cleaned)) !== null; ) {
-    const value = m[1].replace(/\\'/g, "'").replace(/\\\\/g, "\\");
+    const escapedQuote = m[1] === "'" ? /\\'/g : /\\"/g;
+    const value = m[2].replace(escapedQuote, m[1]).replace(/\\\\/g, "\\");
     if (value !== "") found.push(value.slice(0, MAX_KEY_LENGTH));
   }
   return found;
