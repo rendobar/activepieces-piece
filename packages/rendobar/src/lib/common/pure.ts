@@ -243,3 +243,37 @@ export function conflictCode(error: unknown, status = 409): string | undefined {
   const code = (body as { error?: { code?: unknown } }).error?.code;
   return typeof code === 'string' ? code : undefined;
 }
+
+// ── Storage ─────────────────────────────────────────────────────────
+
+/**
+ * The Deliver To selection as `storage://` URIs.
+ *
+ * One path applies to every chosen connection. A flow that needs a different
+ * path per bucket is two steps, or a Custom API Call. Leading slashes go and the
+ * rest is sent as written, so the API's own template rules decide what a folder
+ * or a token means. A repeated connection is one destination.
+ */
+export function destinationUris(ids: unknown, path: unknown): string[] {
+  if (!Array.isArray(ids)) return [];
+  const suffix = typeof path === 'string' ? path.trim().replace(/^\/+/, '') : '';
+  const uris: string[] = [];
+  for (const id of ids) {
+    if (typeof id !== 'string' || id.trim() === '') continue;
+    const uri = suffix === '' ? `storage://${id.trim()}` : `storage://${id.trim()}/${suffix}`;
+    if (!uris.includes(uri)) uris.push(uri);
+  }
+  return uris;
+}
+
+/**
+ * What to tell someone whose storage read was refused. A key made before
+ * connected storage shipped has no storage scope, and the API's sentence names
+ * the scope but not the fix. Keyed on the error code, never the wording.
+ */
+export function storageAdvice(error: unknown): string {
+  if (conflictCode(error, 403) === 'INSUFFICIENT_SCOPE') {
+    return 'This API key cannot read connected storage. Create a new API key in the Rendobar dashboard, where Storage access is on by default, and reconnect Rendobar.';
+  }
+  return error instanceof Error ? error.message : String(error);
+}

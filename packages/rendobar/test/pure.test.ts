@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { HttpError } from "@activepieces/pieces-common";
 import {
   fingerprint,
   isPubliclyReachable,
@@ -7,6 +8,8 @@ import {
   webhookRegistrationHelp,
   requireJobId,
   raiseIfJobFailed,
+  destinationUris,
+  storageAdvice,
 } from "../src/lib/common/pure.js";
 import { stringsFrom } from "../../../scripts/lib/i18n.mjs";
 
@@ -294,5 +297,42 @@ describe("a job that failed", () => {
     for (const status of ["waiting", "dispatched", "running", "complete"]) {
       expect(() => raiseIfJobFailed({ status }, true)).not.toThrow();
     }
+  });
+});
+
+describe('destinationUris', () => {
+  it('gives each chosen connection its own storage URI', () => {
+    expect(destinationUris(['prod-media', 'archive'], '')).toEqual(['storage://prod-media', 'storage://archive']);
+  });
+
+  it('applies one folder or template to every connection, without a leading slash', () => {
+    expect(destinationUris(['prod-media', 'archive'], '/exports/{date}')).toEqual([
+      'storage://prod-media/exports/{date}',
+      'storage://archive/exports/{date}',
+    ]);
+  });
+
+  it('sends nothing when nothing is chosen, so the account default still applies', () => {
+    expect(destinationUris(undefined, 'exports')).toEqual([]);
+    expect(destinationUris([], 'exports')).toEqual([]);
+  });
+
+  it('skips blanks and names a repeated connection once', () => {
+    expect(destinationUris(['prod-media', ' ', 'prod-media', 7], '')).toEqual(['storage://prod-media']);
+  });
+});
+
+describe('storageAdvice', () => {
+  // `rendobar()` rethrows as an Error with a readable message and the HttpError as its cause.
+  const refused = (status: number, code: string, message: string) =>
+    new Error(message, { cause: new HttpError({}, { status, responseBody: { error: { code, message } } } as never) });
+
+  it('sends a key without storage access to make a new key', () => {
+    expect(storageAdvice(refused(403, 'INSUFFICIENT_SCOPE', 'This endpoint requires the storage:read scope.'))).toMatch(/new API key/);
+  });
+
+  it('keeps any other refusal as the API worded it', () => {
+    expect(storageAdvice(refused(404, 'NOT_FOUND', 'Storage "x" not found.'))).toBe('Storage "x" not found.');
+    expect(storageAdvice(new Error('socket hang up'))).toBe('socket hang up');
   });
 });
