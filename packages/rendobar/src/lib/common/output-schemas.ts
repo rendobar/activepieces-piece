@@ -44,6 +44,18 @@ export const JOB_OUTPUT_SCHEMA: OutputSchema = {
         { key: 'type', label: 'Type' },
       ],
     },
+    {
+      key: 'deliveries',
+      label: 'Storage Deliveries',
+      labelKey: 'storageId',
+      listItems: [
+        { key: 'storageId', label: 'Connection' },
+        { key: 'status', label: 'Delivery Status' },
+        { key: 'path', label: 'Path in Bucket' },
+        { key: 'url', label: 'URL', format: 'url' },
+        { key: 'reason', label: 'Reason' },
+      ],
+    },
   ],
 };
 

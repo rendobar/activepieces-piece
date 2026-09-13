@@ -36,4 +36,5 @@ export const FINISHED_JOB_SAMPLE = {
     logs_available: true,
     data: null,
     files: [],
+    deliveries: [],
   };

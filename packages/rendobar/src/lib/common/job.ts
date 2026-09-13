@@ -3,6 +3,16 @@ import { Property } from '@activepieces/pieces-framework';
 import { rendobar } from './client';
 import { rendobarAuth } from '../auth';
 
+/** One destination's outcome, as `GET /jobs/{id}` reports it. */
+export type JobDelivery = {
+  storageId: string;
+  status: 'pending' | 'delivered' | 'failed';
+  path?: string;
+  url?: string;
+  reason?: string;
+  renamed?: boolean;
+};
+
 /**
  * The slice of Rendobar's job response this piece reads. Deliberately partial:
  * the API adds fields additively, and naming only what is used keeps a new
@@ -37,6 +47,7 @@ export type Job = {
     } | null;
     files?: { url: string; path: string; type: string; size: number }[];
   };
+  deliveries?: JobDelivery[];
 };
 
 /** A job stops changing in exactly these three states. */
@@ -101,6 +112,11 @@ export function toJobRow(job: Job): Record<string, unknown> {
     // Job-type-specific result and the full file list. See the comment above.
     data: job.output?.data ?? null,
     files: job.output?.files ?? [],
+
+    // Nested like `files`: a list whose length is not known ahead of time. Empty
+    // for a job that named no destinations, and usually `pending` on a job read
+    // at completion, because deliveries start after it.
+    deliveries: job.deliveries ?? [],
   };
 }
 
