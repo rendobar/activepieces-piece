@@ -290,6 +290,33 @@ export function destinationUris(ids: unknown, path: unknown): string[] {
 }
 
 /**
+ * Refuse a Delivery Folder or Path that names nowhere to write it into.
+ *
+ * A path with no destination is very likely someone who filled in the path and
+ * expected it to pick a bucket on its own, or a Deliver To whose expression
+ * resolved to nothing. Submitting anyway would send the job as though no
+ * destination were named at all, silently dropping the path instead of erroring.
+ *
+ * A `deliverTo` that is present but not an array is a broken expression, not an
+ * empty choice, and is refused even with no path: {@link destinationUris}
+ * would otherwise treat it exactly like nothing being chosen.
+ */
+export function requireDeliveryTarget(deliverTo: unknown, deliveryPath: unknown): void {
+  if (deliverTo !== undefined && deliverTo !== null && !Array.isArray(deliverTo)) {
+    throw new Error(
+      'Deliver To did not resolve to a list of connections. Check the field referencing an earlier step.',
+    );
+  }
+  const path = typeof deliveryPath === 'string' ? deliveryPath.trim() : '';
+  const chosen = Array.isArray(deliverTo) && deliverTo.some((id) => typeof id === 'string' && id.trim() !== '');
+  if (path !== '' && !chosen) {
+    throw new Error(
+      'Delivery Folder or Path applies to the connections chosen under Deliver To. Choose one, or clear the path.',
+    );
+  }
+}
+
+/**
  * What to tell someone whose storage read was refused. A key made before
  * connected storage shipped has no storage scope, and the API's sentence names
  * the scope but not the fix. Keyed on the error code, never the wording.

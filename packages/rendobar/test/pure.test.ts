@@ -10,6 +10,7 @@ import {
   requireStorageId,
   raiseIfJobFailed,
   destinationUris,
+  requireDeliveryTarget,
   storageAdvice,
 } from "../src/lib/common/pure.js";
 import { stringsFrom } from "../../../scripts/lib/i18n.mjs";
@@ -333,6 +334,28 @@ describe('destinationUris', () => {
 
   it('skips blanks and names a repeated connection once', () => {
     expect(destinationUris(['prod-media', ' ', 'prod-media', 7], '')).toEqual(['storage://prod-media']);
+  });
+});
+
+describe('requireDeliveryTarget', () => {
+  it('refuses a path with nothing chosen under Deliver To', () => {
+    expect(() => requireDeliveryTarget(undefined, '/exports')).toThrow(/Choose one, or clear the path/);
+    expect(() => requireDeliveryTarget([], '/exports')).toThrow(/Choose one, or clear the path/);
+    expect(() => requireDeliveryTarget([' ', ''], '/exports')).toThrow(/Choose one, or clear the path/);
+  });
+
+  it('refuses a Deliver To that did not resolve to a list', () => {
+    expect(() => requireDeliveryTarget('prod-media', '')).toThrow(/did not resolve to a list/);
+  });
+
+  it('allows an empty Deliver To with an empty path, so nothing is sent', () => {
+    expect(() => requireDeliveryTarget(undefined, undefined)).not.toThrow();
+    expect(() => requireDeliveryTarget([], '')).not.toThrow();
+    expect(() => requireDeliveryTarget([], '   ')).not.toThrow();
+  });
+
+  it('allows a path once a connection is chosen', () => {
+    expect(() => requireDeliveryTarget(['prod-media'], '/exports')).not.toThrow();
   });
 });
 

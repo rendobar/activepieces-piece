@@ -7,7 +7,7 @@ import {
 import { HttpMethod } from '@activepieces/pieces-common';
 import { rendobarAuth } from '../auth';
 import { rendobar, submitJob, JobTypeSummary, JobSchema } from '../common/client';
-import { fingerprint, isPubliclyReachable, callbackStillComing, destinationUris } from '../common/pure';
+import { fingerprint, isPubliclyReachable, callbackStillComing, destinationUris, requireDeliveryTarget } from '../common/pure';
 import { buildProps, paramsFromForm, buildInputProps, inputsFromForm } from '../common/fields';
 import { toJobRow, waitForJob, attachOutputFile, getJobById, JOB_OUTPUT_SCHEMA } from '../common/job';
 import { jobIdFromEnvelope, raiseIfJobFailed } from '../common/pure';
@@ -199,6 +199,8 @@ export const createJob = createAction({
       raiseIfJobFailed(resumedRow, failOnJobError);
       return downloadOutput ? attachOutputFile(resumedRow, context.files) : resumedRow;
     }
+
+    requireDeliveryTarget(deliverTo, deliveryPath);
 
     const chosenKey = (context.propsValue.idempotencyKey ?? '').trim();
     const token = context.auth.secret_text;

@@ -199,4 +199,20 @@ describe('destinations', () => {
     const second = await submit({ deliverTo: ['archive'] });
     expect(first.idempotencyKey).not.toBe(second.idempotencyKey);
   });
+
+  it('refuses a path with nothing chosen under Deliver To, before any request', async () => {
+    const sent = stubApi(() => ACCEPTED);
+    await expect(
+      createJob.run(context({ waitForResult: false, deliveryPath: '/exports' }).ctx),
+    ).rejects.toThrow(/Choose one, or clear the path/);
+    expect(sent).toHaveLength(0);
+  });
+
+  it('refuses a Deliver To that did not resolve to a list, before any request', async () => {
+    const sent = stubApi(() => ACCEPTED);
+    await expect(
+      createJob.run(context({ waitForResult: false, deliverTo: 'prod-media' }).ctx),
+    ).rejects.toThrow(/did not resolve to a list/);
+    expect(sent).toHaveLength(0);
+  });
 });
