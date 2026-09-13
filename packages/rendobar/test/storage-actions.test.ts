@@ -75,4 +75,38 @@ describe('List Storage Files', () => {
     await expect(run(listStorageFiles, { storageId: '   ', limit: 5 })).rejects.toThrow(/storage connection/i);
     expect(sent).toHaveLength(0);
   });
+
+  it('escapes %, ? and # in the uri but keeps the raw key in path', async () => {
+    stubApi(() => ({
+      status: 200,
+      body: {
+        data: {
+          folders: [],
+          objects: [
+            { key: 'raw/clip#1.mp4', size: 1, lastModified: null },
+            { key: '50%.mp4', size: 2, lastModified: null },
+            { key: 'a?b.mp4', size: 3, lastModified: null },
+            { key: 'raw exports/日本語 café.mp4', size: 4, lastModified: null },
+          ],
+          cursor: null,
+        },
+      },
+    }));
+    const out = await run(listStorageFiles, { storageId: 'prod-media', limit: 10 });
+    expect(out).toEqual({
+      folders: [],
+      files: [
+        { path: 'raw/clip#1.mp4', size_bytes: 1, last_modified: null, uri: 'storage://prod-media/raw/clip%231.mp4' },
+        { path: '50%.mp4', size_bytes: 2, last_modified: null, uri: 'storage://prod-media/50%25.mp4' },
+        { path: 'a?b.mp4', size_bytes: 3, last_modified: null, uri: 'storage://prod-media/a%3Fb.mp4' },
+        {
+          path: 'raw exports/日本語 café.mp4',
+          size_bytes: 4,
+          last_modified: null,
+          uri: 'storage://prod-media/raw exports/日本語 café.mp4',
+        },
+      ],
+      truncated: false,
+    });
+  });
 });

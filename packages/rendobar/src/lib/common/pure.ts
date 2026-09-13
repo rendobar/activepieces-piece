@@ -270,6 +270,21 @@ export function conflictCode(error: unknown, status = 409): string | undefined {
 // ── Storage ─────────────────────────────────────────────────────────
 
 /**
+ * Escape a raw object key or folder path for the path part of a `storage://`
+ * URI, so a `%`, `?` or `#` coming from the bucket cannot be mistaken by a
+ * parser for a percent-escape, a query string or a fragment. Mirrors the
+ * API's own decoder (apps/api), which reverses exactly this.
+ *
+ * Order matters: `%` is escaped first, or escaping `?`/`#` afterwards would
+ * double-escape the `%` those produce. Everything else -- spaces, unicode,
+ * `{template}` tokens -- stays literal. The storage id and the `/` separators
+ * are never passed through this; only the path part is.
+ */
+export function encodeStoragePath(path: string): string {
+  return path.replace(/%/g, '%25').replace(/\?/g, '%3F').replace(/#/g, '%23');
+}
+
+/**
  * The Deliver To selection as `storage://` URIs.
  *
  * One path applies to every chosen connection. A flow that needs a different
@@ -279,7 +294,7 @@ export function conflictCode(error: unknown, status = 409): string | undefined {
  */
 export function destinationUris(ids: unknown, path: unknown): string[] {
   if (!Array.isArray(ids)) return [];
-  const suffix = typeof path === 'string' ? path.trim().replace(/^\/+/, '') : '';
+  const suffix = typeof path === 'string' ? encodeStoragePath(path.trim().replace(/^\/+/, '')) : '';
   const uris: string[] = [];
   for (const id of ids) {
     if (typeof id !== 'string' || id.trim() === '') continue;
