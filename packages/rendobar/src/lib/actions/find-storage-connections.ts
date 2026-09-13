@@ -4,9 +4,9 @@ import { listConnections, toStorageRow } from '../common/storage';
 import { storageAdvice } from '../common/pure';
 import { STORAGE_LIST_OUTPUT_SCHEMA } from '../common/output-schemas';
 
-export const findStorage = createAction({
+export const findStorageConnections = createAction({
   auth: rendobarAuth,
-  name: 'find_storage',
+  name: 'find_storage_connections',
   classification: 'SEARCH',
   displayName: 'Find Storage Connections',
   description: "List the buckets connected on Rendobar's Storage page.",

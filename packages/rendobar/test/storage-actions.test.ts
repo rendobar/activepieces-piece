@@ -1,7 +1,7 @@
 /// <reference types="vitest/globals" />
 import { vi } from 'vitest';
 import { HttpError } from '@activepieces/pieces-common';
-import { findStorage } from '../src/lib/actions/find-storage';
+import { findStorageConnections } from '../src/lib/actions/find-storage-connections';
 import { listStorageFiles } from '../src/lib/actions/list-storage-files';
 import { stubApi } from './helpers';
 
@@ -13,14 +13,14 @@ afterEach(() => vi.restoreAllMocks());
 describe('Find Storage Connections', () => {
   it('returns one row per connection', async () => {
     stubApi(() => ({ status: 200, body: { data: [{ id: 'prod-media', provider: 's3', bucket: 'acme', region: 'eu-west-1' }], meta: { total: 1 } } }));
-    expect(await run(findStorage, {})).toEqual([
+    expect(await run(findStorageConnections, {})).toEqual([
       { id: 'prod-media', provider: 's3', bucket: 'acme', region: 'eu-west-1', access: 'deliver', default_destination: false, pending: false },
     ]);
   });
 
   it('tells a key without storage access how to get one', async () => {
     stubApi(() => new HttpError({}, { status: 403, responseBody: { error: { code: 'INSUFFICIENT_SCOPE', message: 'This endpoint requires the storage:read scope.' } } } as never));
-    await expect(run(findStorage, {})).rejects.toThrow(/new API key/);
+    await expect(run(findStorageConnections, {})).rejects.toThrow(/new API key/);
   });
 });
 
