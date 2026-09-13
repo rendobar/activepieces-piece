@@ -221,6 +221,23 @@ describe("translatable strings", () => {
     // made the first version of this test pass a string with no escape in it.
     expect(stringsFrom("description: 'the job\\'s output'")).toEqual(["the job's output"]);
   });
+
+  it("finds a double-quoted displayName, description and option label", () => {
+    const found = stringsFrom(`
+      export const x = createAction({
+        displayName: "Run a Media Job",
+        description: "Submit a job.",
+        props: { p: Property.StaticDropdown({ options: { options: [{ label: "Any", value: "a" }] } }) },
+      });
+    `);
+    expect(found).toEqual(["Run a Media Job", "Submit a job.", "Any"]);
+  });
+
+  it("reads an escaped double quote back as the string the user sees", () => {
+    // Same doubled-backslash reasoning as the single-quoted case above, this
+    // time for a value that itself contains a double quote.
+    expect(stringsFrom('description: "the job\\"s output"')).toEqual(['the job"s output']);
+  });
 });
 
 describe("diagnosing a refused webhook registration", () => {
