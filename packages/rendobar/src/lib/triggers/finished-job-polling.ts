@@ -72,7 +72,9 @@ const polling: Polling<
         // createdAt would replay a long render that was submitted before the
         // last poll and only landed during this one.
         epochMilliSeconds: job.completedAt as number,
-        data: toJobRow(job),
+        // GET /jobs (the list) omits deliveries, so this reports the column as
+        // not available rather than claiming an empty list.
+        data: { ...toJobRow(job), deliveries: null },
       }));
   },
 };

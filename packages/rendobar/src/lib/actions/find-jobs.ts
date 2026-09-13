@@ -64,7 +64,8 @@ export const findJobs = createAction({
       `/jobs?${query.toString()}`,
     );
     // Same row shape as every other job-shaped step, so a table built on one
-    // works on the others.
-    return page.data.map(toJobRow);
+    // works on the others. GET /jobs (the list) omits deliveries, so this
+    // reports the column as not available rather than claiming an empty list.
+    return page.data.map((job) => ({ ...toJobRow(job), deliveries: null }));
   },
 });

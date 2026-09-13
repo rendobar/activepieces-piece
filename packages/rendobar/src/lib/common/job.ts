@@ -62,11 +62,11 @@ export function isTerminal(status: string): boolean {
  * value lands in its own spreadsheet column, and a missing one is null rather
  * than absent so an array of these keeps consistent columns.
  *
- * Two fields stay nested on purpose. `data` is the whole point of a job type
+ * Three fields stay nested on purpose. `data` is the whole point of a job type
  * like ffprobe or captions.transcribe (a probe result, a transcript) and its
  * shape differs per type, so flattening would either stringify it or drop it.
- * `files` is a list whose length is not known ahead of time. Both are additions
- * beside the flat columns, never a replacement for them.
+ * `files` and `deliveries` are lists whose length is not known ahead of time.
+ * All three are additions beside the flat columns, never a replacement for them.
  */
 export function toJobRow(job: Job): Record<string, unknown> {
   const file = job.output?.file ?? null;

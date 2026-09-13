@@ -13,7 +13,7 @@ import { type OutputSchema } from '@activepieces/pieces-framework';
  * duration as a duration, nanodollars stop looking like a nine-digit integer.
  */
 
-/** The 30-column row every job-shaped action and trigger returns. */
+/** The 31-column row every job-shaped action and trigger returns. */
 export const JOB_OUTPUT_SCHEMA: OutputSchema = {
   fields: [
     { key: 'status', label: 'Status' },
@@ -47,6 +47,7 @@ export const JOB_OUTPUT_SCHEMA: OutputSchema = {
     {
       key: 'deliveries',
       label: 'Storage Deliveries',
+      description: 'Run a Media Job, Get Job and Finished Job report it. Job lists such as Find Jobs and Finished Job (Polling) do not.',
       labelKey: 'storageId',
       listItems: [
         { key: 'storageId', label: 'Connection' },
@@ -54,6 +55,7 @@ export const JOB_OUTPUT_SCHEMA: OutputSchema = {
         { key: 'path', label: 'Path in Bucket' },
         { key: 'url', label: 'URL', format: 'url' },
         { key: 'reason', label: 'Reason' },
+        { key: 'renamed', label: 'Renamed', format: 'boolean' },
       ],
     },
   ],

@@ -136,6 +136,10 @@ export const finishedJob = createTrigger({
       HttpMethod.GET,
       '/jobs?limit=5&sort=created&order=desc&status=complete',
     );
-    return page.data.filter((job) => isTerminal(job.status)).map(toJobRow);
+    // GET /jobs (the list) omits deliveries, so this reports the column as not
+    // available rather than claiming an empty list.
+    return page.data
+      .filter((job) => isTerminal(job.status))
+      .map((job) => ({ ...toJobRow(job), deliveries: null }));
   },
 });
