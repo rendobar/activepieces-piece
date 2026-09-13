@@ -31,6 +31,9 @@ const OUTCOME_EVENTS: Record<string, string[]> = {
   complete: ['job.completed'],
   failed: ['job.failed'],
   any: ['job.completed', 'job.failed', 'job.cancelled'],
+  // Fires once, after the last destination of a job resolves. The job read that
+  // follows carries every outcome in `deliveries`.
+  delivered: ['job.deliveries_settled'],
 };
 
 export const finishedJob = createTrigger({
@@ -57,6 +60,7 @@ export const finishedJob = createTrigger({
           { label: 'Succeeded only (recommended)', value: 'complete' },
           { label: 'Failed only', value: 'failed' },
           { label: 'Any finished job, including cancelled', value: 'any' },
+          { label: 'Storage deliveries settled', value: 'delivered' },
         ],
       },
     }),
@@ -111,12 +115,16 @@ export const finishedJob = createTrigger({
     if (jobId === undefined) return [];
 
     const wanted = context.propsValue.jobType?.trim();
-    if (wanted && envelope.data?.jobType !== wanted) return [];
+    // A job event names its type. `job.deliveries_settled` does not, so the
+    // filter falls back to the job read that happens anyway.
+    const namedType = envelope.data?.jobType;
+    if (wanted && namedType !== undefined && namedType !== wanted) return [];
 
     // The delivery carries a summary; the job read carries every column the
     // actions return. Re-reading keeps one row shape across the whole piece,
     // which is what lets a table built on Get Job work here unchanged.
     const job = await getJobById(context.auth.secret_text, jobId);
+    if (wanted && job.type !== wanted) return [];
     return [toJobRow(job)];
   },
 

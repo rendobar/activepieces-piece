@@ -80,6 +80,7 @@
   "Starts the flow the moment a media job finishes.": "Starts the flow the moment a media job finishes.",
   "Status": "Status",
   "Stop a job that has not started running yet.": "Stop a job that has not started running yet.",
+  "Storage deliveries settled": "Storage deliveries settled",
   "Submit a media processing job and wait for the finished file.": "Submit a media processing job and wait for the finished file.",
   "Succeeded": "Succeeded",
   "Succeeded only (recommended)": "Succeeded only (recommended)",
