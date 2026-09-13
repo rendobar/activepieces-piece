@@ -41,6 +41,7 @@
   "Hold the flow until the job finishes, so the next step gets the output file. Turn this off to submit and move on, then pick the result up with the Finished Job trigger.": "Hold the flow until the job finishes, so the next step gets the output file. Turn this off to submit and move on, then pick the result up with the Finished Job trigger.",
   "How long to wait before giving up and returning the job as still running. The job itself keeps going on Rendobar either way. Keep this below your flow timeout, which is 600 seconds by default.": "How long to wait before giving up and returning the job as still running. The job itself keeps going on Rendobar either way. Keep this below your flow timeout, which is 600 seconds by default.",
   "How many files to return at most.": "How many files to return at most.",
+  "How many folders and files to return at most.": "How many folders and files to return at most.",
   "How many to return, newest first.": "How many to return, newest first.",
   "Idempotency Key": "Idempotency Key",
   "Input Media": "Input Media",

@@ -7,6 +7,7 @@ import {
   jobIdFromEnvelope,
   webhookRegistrationHelp,
   requireJobId,
+  requireStorageId,
   raiseIfJobFailed,
   destinationUris,
   storageAdvice,
@@ -265,6 +266,19 @@ describe("a step given no job", () => {
   it("passes a real id through, trimmed", () => {
     expect(requireJobId("job_abc")).toBe("job_abc");
     expect(requireJobId("  job_abc  ")).toBe("job_abc");
+  });
+});
+
+describe("a step given no storage connection", () => {
+  it("says which field is wrong instead of letting the URL break", () => {
+    for (const empty of ["", "   ", undefined, null, 42]) {
+      expect(() => requireStorageId(empty)).toThrow(/No storage connection was given/);
+    }
+  });
+
+  it("passes a real id through, trimmed", () => {
+    expect(requireStorageId("prod-media")).toBe("prod-media");
+    expect(requireStorageId("  prod-media  ")).toBe("prod-media");
   });
 });
 

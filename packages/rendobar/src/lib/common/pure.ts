@@ -171,6 +171,18 @@ export function webhookRegistrationHelp(reason: string): string {
 }
 
 /**
+ * A required identifier, trimmed, or a message naming the problem.
+ *
+ * Shared by every "which field is wrong" guard below rather than each
+ * duplicating the same trim-or-throw, since only the message differs.
+ */
+function requireNonEmpty(value: unknown, message: string): string {
+  const trimmed = typeof value === 'string' ? value.trim() : '';
+  if (trimmed === '') throw new Error(message);
+  return trimmed;
+}
+
+/**
  * The job id a step was given, or a message naming the problem.
  *
  * An unset id is the common case, not an exotic one: a dropdown left untouched,
@@ -180,13 +192,24 @@ export function webhookRegistrationHelp(reason: string): string {
  * or what to do. Measured against a live Activepieces before this existed.
  */
 export function requireJobId(jobId: unknown): string {
-  const value = typeof jobId === 'string' ? jobId.trim() : '';
-  if (value === '') {
-    throw new Error(
-      'No job was given. Pick one from the dropdown, or check that the field referencing an earlier step resolves to a job id.',
-    );
-  }
-  return value;
+  return requireNonEmpty(
+    jobId,
+    'No job was given. Pick one from the dropdown, or check that the field referencing an earlier step resolves to a job id.',
+  );
+}
+
+/**
+ * The storage connection id a step was given, or a message naming the problem.
+ *
+ * Same reasoning as {@link requireJobId}: an empty id would otherwise build
+ * `/storage//objects` and Rendobar would answer "Route not found", naming
+ * neither the step at fault nor the fix.
+ */
+export function requireStorageId(storageId: unknown): string {
+  return requireNonEmpty(
+    storageId,
+    'No storage connection was given. Pick one from the Connection dropdown, or check that the field referencing an earlier step resolves to a connection id.',
+  );
 }
 
 /**
