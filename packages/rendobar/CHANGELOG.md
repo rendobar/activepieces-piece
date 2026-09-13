@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/rendobar/activepieces-piece/compare/v0.2.0...v0.2.1) (2026-09-13)
+
+
+### Bug Fixes
+
+* translate two display strings the i18n guard was missing ([a789be6](https://github.com/rendobar/activepieces-piece/commit/a789be6dd6ea9ce370cf18d7f22f56eab6bed7fa))
+* write storage URIs with %, ? and # encoded ([a789be6](https://github.com/rendobar/activepieces-piece/commit/a789be6dd6ea9ce370cf18d7f22f56eab6bed7fa))
+
 ## [0.2.0](https://github.com/rendobar/activepieces-piece/compare/v0.1.2...v0.2.0) (2026-09-13)
 
 
