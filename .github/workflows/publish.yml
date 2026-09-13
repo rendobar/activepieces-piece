@@ -89,13 +89,13 @@ jobs:
       - name: Confirm it resolves
         run: |
           VERSION="$(node -p "require('./packages/rendobar/package.json').version")"
-          for i in 1 2 3 4 5; do
+          for i in $(seq 1 12); do
             if npm view "@rendobar/piece-rendobar@${VERSION}" version >/dev/null 2>&1; then
               echo "resolved @rendobar/piece-rendobar@${VERSION}"
               exit 0
             fi
             echo "not visible yet, retry $i"
-            sleep 20
+            sleep 25
           done
           echo "published but never became resolvable"
           exit 1
