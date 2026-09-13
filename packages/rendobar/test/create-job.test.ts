@@ -1,8 +1,8 @@
 /// <reference types="vitest/globals" />
-import { vi } from 'vitest';
-import { httpClient, HttpMethod } from '@activepieces/pieces-common';
+import { HttpMethod } from '@activepieces/pieces-common';
 import { ExecutionType, createMockActionContext } from '@activepieces/pieces-framework';
 import { createJob } from '../src/lib/actions/create-job';
+import { stubApi, type Sent } from './helpers';
 
 /**
  * The action's decision tree, run against the real framework.
@@ -17,19 +17,6 @@ import { createJob } from '../src/lib/actions/create-job';
  * waitpoint piece in the catalog has tests. The hooks are supplied below rather
  * than the action being reshaped to suit the helper.
  */
-
-type Sent = { method: HttpMethod; url: string; body?: unknown };
-
-function stubApi(reply: (sent: Sent) => { status: number; body: unknown }) {
-  const sent: Sent[] = [];
-  vi.spyOn(httpClient, 'sendRequest').mockImplementation(async (request: any) => {
-    const record: Sent = { method: request.method, url: request.url, body: request.body };
-    sent.push(record);
-    const { status, body } = reply(record);
-    return { status, body, headers: {} } as any;
-  });
-  return sent;
-}
 
 const RESUME_URL = 'https://cloud.activepieces.com/api/v1/resume/wp_1';
 
