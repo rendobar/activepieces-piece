@@ -175,3 +175,28 @@ describe('resuming', () => {
     await expect(createJob.run(ctx)).rejects.toThrow(/names no job/);
   });
 });
+
+describe('destinations', () => {
+  // Not waiting, so the step submits once and returns without a waitpoint.
+  const submit = async (props: Record<string, unknown>) => {
+    const sent = stubApi(() => ACCEPTED);
+    await createJob.run(context({ waitForResult: false, ...props }).ctx);
+    return sent.find((s) => s.method === HttpMethod.POST && s.url.endsWith('/jobs'))?.body as { destinations?: string[]; idempotencyKey: string };
+  };
+
+  it('sends the chosen connections as destinations, sharing one path', async () => {
+    const body = await submit({ deliverTo: ['prod-media', 'archive'], deliveryPath: '/exports' });
+    expect(body.destinations).toEqual(['storage://prod-media/exports', 'storage://archive/exports']);
+  });
+
+  it('sends no destinations key when nothing is chosen, so the account default applies', async () => {
+    expect(await submit({})).not.toHaveProperty('destinations');
+  });
+
+  it('gives two submissions that differ only by destination two idempotency keys', async () => {
+    const first = await submit({ deliverTo: ['prod-media'] });
+    vi.restoreAllMocks();
+    const second = await submit({ deliverTo: ['archive'] });
+    expect(first.idempotencyKey).not.toBe(second.idempotencyKey);
+  });
+});

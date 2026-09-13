@@ -6,12 +6,15 @@
   "Authorization headers are injected automatically from your connection.": "Authorization headers are injected automatically from your connection.",
   "Body": "Body",
   "Body Type": "Body Type",
+  "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set.": "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set.",
   "Cancel Job": "Cancel Job",
   "Cancelled": "Cancelled",
   "Checks every few minutes for finished jobs. Use when this Activepieces cannot receive webhooks.": "Checks every few minutes for finished jobs. Use when this Activepieces cannot receive webhooks.",
   "Connect with a Rendobar API key.\n\n1. Open [app.rendobar.com](https://app.rendobar.com) and sign in, creating an account if you do not have one.\n2. Go to **Settings → API Keys** and click **Create key**.\n3. Copy the key and paste it below. It starts with `rb_`.\n\nJobs are billed to that key's organization. An OAuth access token also works here if you already have one.": "Connect with a Rendobar API key.\n\n1. Open [app.rendobar.com](https://app.rendobar.com) and sign in, creating an account if you do not have one.\n2. Go to **Settings → API Keys** and click **Create key**.\n3. Copy the key and paste it below. It starts with `rb_`.\n\nJobs are billed to that key's organization. An OAuth access token also works here if you already have one.",
   "Custom API Call": "Custom API Call",
   "DELETE": "DELETE",
+  "Deliver To": "Deliver To",
+  "Delivery Folder or Path": "Delivery Folder or Path",
   "Dispatched": "Dispatched",
   "Download the Output File": "Download the Output File",
   "Enable for files like PDFs, images, etc.": "Enable for files like PDFs, images, etc.",
@@ -88,5 +91,6 @@
   "Wait for the Result": "Wait for the Result",
   "Waiting": "Waiting",
   "What to do with the media. The parameters below change to match.": "What to do with the media. The parameters below change to match.",
+  "Where in each chosen bucket. Leave empty for the connection's own output path. A folder keeps that path's file name, and a path with {job_id}, {ext}, {source_name} or {date} is used as written.": "Where in each chosen bucket. Leave empty for the connection's own output path. A folder keeps that path's file name, and a path with {job_id}, {ext}, {source_name} or {date} is used as written.",
   "Which finished jobs should start this flow.": "Which finished jobs should start this flow."
 }
