@@ -171,6 +171,18 @@ export function webhookRegistrationHelp(reason: string): string {
 }
 
 /**
+ * A required identifier, trimmed, or a message naming the problem.
+ *
+ * Shared by every "which field is wrong" guard below rather than each
+ * duplicating the same trim-or-throw, since only the message differs.
+ */
+function requireNonEmpty(value: unknown, message: string): string {
+  const trimmed = typeof value === 'string' ? value.trim() : '';
+  if (trimmed === '') throw new Error(message);
+  return trimmed;
+}
+
+/**
  * The job id a step was given, or a message naming the problem.
  *
  * An unset id is the common case, not an exotic one: a dropdown left untouched,
@@ -180,13 +192,24 @@ export function webhookRegistrationHelp(reason: string): string {
  * or what to do. Measured against a live Activepieces before this existed.
  */
 export function requireJobId(jobId: unknown): string {
-  const value = typeof jobId === 'string' ? jobId.trim() : '';
-  if (value === '') {
-    throw new Error(
-      'No job was given. Pick one from the dropdown, or check that the field referencing an earlier step resolves to a job id.',
-    );
-  }
-  return value;
+  return requireNonEmpty(
+    jobId,
+    'No job was given. Pick one from the dropdown, or check that the field referencing an earlier step resolves to a job id.',
+  );
+}
+
+/**
+ * The storage connection id a step was given, or a message naming the problem.
+ *
+ * Same reasoning as {@link requireJobId}: an empty id would otherwise build
+ * `/storage//objects` and Rendobar would answer "Route not found", naming
+ * neither the step at fault nor the fix.
+ */
+export function requireStorageId(storageId: unknown): string {
+  return requireNonEmpty(
+    storageId,
+    'No storage connection was given. Pick one from the Connection dropdown, or check that the field referencing an earlier step resolves to a connection id.',
+  );
 }
 
 /**
@@ -242,4 +265,65 @@ export function conflictCode(error: unknown, status = 409): string | undefined {
   if (typeof body !== 'object' || body === null || !('error' in body)) return undefined;
   const code = (body as { error?: { code?: unknown } }).error?.code;
   return typeof code === 'string' ? code : undefined;
+}
+
+// ── Storage ─────────────────────────────────────────────────────────
+
+/**
+ * The Deliver To selection as `storage://` URIs.
+ *
+ * One path applies to every chosen connection. A flow that needs a different
+ * path per bucket is two steps, or a Custom API Call. Leading slashes go and the
+ * rest is sent as written, so the API's own template rules decide what a folder
+ * or a token means. A repeated connection is one destination.
+ */
+export function destinationUris(ids: unknown, path: unknown): string[] {
+  if (!Array.isArray(ids)) return [];
+  const suffix = typeof path === 'string' ? path.trim().replace(/^\/+/, '') : '';
+  const uris: string[] = [];
+  for (const id of ids) {
+    if (typeof id !== 'string' || id.trim() === '') continue;
+    const uri = suffix === '' ? `storage://${id.trim()}` : `storage://${id.trim()}/${suffix}`;
+    if (!uris.includes(uri)) uris.push(uri);
+  }
+  return uris;
+}
+
+/**
+ * Refuse a Delivery Folder or Path that names nowhere to write it into.
+ *
+ * A path with no destination is very likely someone who filled in the path and
+ * expected it to pick a bucket on its own, or a Deliver To whose expression
+ * resolved to nothing. Submitting anyway would send the job as though no
+ * destination were named at all, silently dropping the path instead of erroring.
+ *
+ * A `deliverTo` that is present but not an array is a broken expression, not an
+ * empty choice, and is refused even with no path: {@link destinationUris}
+ * would otherwise treat it exactly like nothing being chosen.
+ */
+export function requireDeliveryTarget(deliverTo: unknown, deliveryPath: unknown): void {
+  if (deliverTo !== undefined && deliverTo !== null && !Array.isArray(deliverTo)) {
+    throw new Error(
+      'Deliver To did not resolve to a list of connections. Check the field referencing an earlier step.',
+    );
+  }
+  const path = typeof deliveryPath === 'string' ? deliveryPath.trim() : '';
+  const chosen = Array.isArray(deliverTo) && deliverTo.some((id) => typeof id === 'string' && id.trim() !== '');
+  if (path !== '' && !chosen) {
+    throw new Error(
+      'Delivery Folder or Path applies to the connections chosen under Deliver To. Choose one, or clear the path.',
+    );
+  }
+}
+
+/**
+ * What to tell someone whose storage read was refused. A key made before
+ * connected storage shipped has no storage scope, and the API's sentence names
+ * the scope but not the fix. Keyed on the error code, never the wording.
+ */
+export function storageAdvice(error: unknown): string {
+  if (conflictCode(error, 403) === 'INSUFFICIENT_SCOPE') {
+    return 'This API key cannot read connected storage. Create a new API key in the Rendobar dashboard, where Storage access is on by default, and reconnect Rendobar.';
+  }
+  return error instanceof Error ? error.message : String(error);
 }

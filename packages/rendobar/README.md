@@ -26,6 +26,8 @@ Source and issues live at
 | Upload File | Puts a file from the flow into Rendobar and returns a URL a job can read |
 | Get Job | Reads a job's status, output file and cost |
 | Find Jobs | Lists recent jobs, filtered by status and type |
+| Find Storage Connections | Lists the buckets connected on Rendobar's Storage page |
+| List Storage Files | Lists folders and files in a connected bucket, each with a `storage://` URI |
 | Get Job Logs | Reads a job's execution logs, for diagnosing a failure |
 | Get Account | Plan, credit balance, subscription and limits |
 | Cancel Job | Stops a job that has not started running |
@@ -34,7 +36,7 @@ Source and issues live at
 ## Triggers
 
 **Finished Job** registers a webhook and starts the flow the moment a job
-finishes. **Finished Job (Polling)** does the same on a timer, for an
+finishes. Set Outcome to **Storage deliveries settled** to start the flow once every bucket chosen under Deliver To has been written. **Finished Job (Polling)** does the same on a timer, for an
 Activepieces that Rendobar cannot reach from the internet.
 
 ## Waiting
@@ -89,6 +91,8 @@ it came from an action or a trigger: `id`, `type`, `status`, `succeeded`,
 
 `cost_formatted` can be `null` on a row read the moment a job completes, because
 billing settles a moment later. A later read, including a trigger's, carries it.
+
+`deliveries` lists what happened at each bucket chosen under **Deliver To**: `storageId`, `status` (`pending`, `delivered` or `failed`), `path`, `url` and `reason`. Deliveries start after the job finishes, so a row read at that moment usually shows them `pending`. An API key made before September 13, 2026 cannot read storage, so create a new one.
 
 ## Waiting
 

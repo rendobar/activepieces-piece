@@ -7,10 +7,11 @@ import {
 import { HttpMethod } from '@activepieces/pieces-common';
 import { rendobarAuth } from '../auth';
 import { rendobar, submitJob, JobTypeSummary, JobSchema } from '../common/client';
-import { fingerprint, isPubliclyReachable, callbackStillComing } from '../common/pure';
+import { fingerprint, isPubliclyReachable, callbackStillComing, destinationUris, requireDeliveryTarget } from '../common/pure';
 import { buildProps, paramsFromForm, buildInputProps, inputsFromForm } from '../common/fields';
 import { toJobRow, waitForJob, attachOutputFile, getJobById, JOB_OUTPUT_SCHEMA } from '../common/job';
 import { jobIdFromEnvelope, raiseIfJobFailed } from '../common/pure';
+import { connectionDropdown } from '../common/storage';
 
 const schemaFor = (token: string, type: string) =>
   rendobar<{ data: JobSchema }>(token, HttpMethod.GET, `/jobs/types/${encodeURIComponent(type)}/schema`);
@@ -24,7 +25,7 @@ export const createJob = createAction({
   audience: 'both',
   aiMetadata: {
     description:
-      'Run one media or AI job on Rendobar (transcode, compress, watermark, caption, probe, generate) and return the finished file URL. Pick the job type first, then fill the parameters it declares. Waiting pauses the flow until Rendobar calls back, so a job that runs for hours is fine. Each distinct call submits a new billable job; a retry of the same call settles on the job it already created rather than paying twice.',
+      'Run one media or AI job on Rendobar (transcode, compress, watermark, caption, probe, generate) and return the finished file URL. Pick the job type first, then fill the parameters it declares. Waiting pauses the flow until Rendobar calls back, so a job that runs for hours is fine. Each distinct call submits a new billable job; a retry of the same call settles on the job it already created rather than paying twice. Deliveries start after the job finishes, so to act once they land, use Finished Job with the Storage deliveries settled outcome.',
     idempotent: true,
   },
   outputSchema: JOB_OUTPUT_SCHEMA,
@@ -119,6 +120,23 @@ export const createJob = createAction({
       },
     }),
 
+    deliverTo: Property.MultiSelectDropdown({
+      displayName: 'Deliver To',
+      description:
+        "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set. Deliveries start after the job finishes, so to act once they land, use Finished Job with the Storage deliveries settled outcome.",
+      required: false,
+      auth: rendobarAuth,
+      refreshers: [],
+      options: async ({ auth }) => connectionDropdown(auth?.secret_text, true),
+    }),
+
+    deliveryPath: Property.ShortText({
+      displayName: 'Delivery Folder or Path',
+      description:
+        "Where in each chosen bucket. Leave empty for the connection's own output path. A folder keeps that path's file name, and a path with {job_id}, {ext}, {source_name} or {date} is used as written.",
+      required: false,
+    }),
+
     waitForResult: Property.Checkbox({
       displayName: 'Wait for the Result',
       description:
@@ -160,7 +178,7 @@ export const createJob = createAction({
   },
 
   async run(context) {
-    const { jobType, variant, params, inputs, waitForResult, maxWaitSeconds, downloadOutput } =
+    const { jobType, variant, params, inputs, waitForResult, maxWaitSeconds, downloadOutput, deliverTo, deliveryPath } =
       context.propsValue;
     const failOnJobError = context.propsValue.failOnJobError !== false;
 
@@ -181,6 +199,8 @@ export const createJob = createAction({
       raiseIfJobFailed(resumedRow, failOnJobError);
       return downloadOutput ? attachOutputFile(resumedRow, context.files) : resumedRow;
     }
+
+    requireDeliveryTarget(deliverTo, deliveryPath);
 
     const chosenKey = (context.propsValue.idempotencyKey ?? '').trim();
     const token = context.auth.secret_text;
@@ -204,7 +224,15 @@ export const createJob = createAction({
       if (schema.data.discriminator) submitted[schema.data.discriminator] = variant;
     }
 
-    const submission = { type: jobType, inputs: media, params: submitted };
+    const destinations = destinationUris(deliverTo, deliveryPath);
+    // Inside the submission, so inside the fingerprint: the same job delivered to
+    // two different places is two submissions and must not share a key.
+    const submission = {
+      type: jobType,
+      inputs: media,
+      params: submitted,
+      ...(destinations.length === 0 ? {} : { destinations }),
+    };
 
     // Without a key, an automatic step retry submits the work again and bills
     // for it a second time. Run and step separate the ordinary cases (two

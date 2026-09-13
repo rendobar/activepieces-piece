@@ -31,6 +31,9 @@ const OUTCOME_EVENTS: Record<string, string[]> = {
   complete: ['job.completed'],
   failed: ['job.failed'],
   any: ['job.completed', 'job.failed', 'job.cancelled'],
+  // Fires once, after the last destination of a job resolves. The job read that
+  // follows carries every outcome in `deliveries`.
+  delivered: ['job.deliveries_settled'],
 };
 
 export const finishedJob = createTrigger({
@@ -41,7 +44,7 @@ export const finishedJob = createTrigger({
   description: 'Starts the flow the moment a media job finishes.',
   aiMetadata: {
     description:
-      "Fires once per Rendobar job that reaches a finished state, carrying that job's output file URL, cost and timing.",
+      "Fires once per Rendobar job that reaches a finished state, carrying that job's output file URL, cost and timing. Deliveries start after the job finishes, so to act once they land, use Finished Job with the Storage deliveries settled outcome.",
   },
   type: TriggerStrategy.WEBHOOK,
   outputSchema: JOB_OUTPUT_SCHEMA,
@@ -57,6 +60,7 @@ export const finishedJob = createTrigger({
           { label: 'Succeeded only (recommended)', value: 'complete' },
           { label: 'Failed only', value: 'failed' },
           { label: 'Any finished job, including cancelled', value: 'any' },
+          { label: 'Storage deliveries settled', value: 'delivered' },
         ],
       },
     }),
@@ -111,12 +115,16 @@ export const finishedJob = createTrigger({
     if (jobId === undefined) return [];
 
     const wanted = context.propsValue.jobType?.trim();
-    if (wanted && envelope.data?.jobType !== wanted) return [];
+    // A job event names its type. `job.deliveries_settled` does not, so the
+    // filter falls back to the job read that happens anyway.
+    const namedType = envelope.data?.jobType;
+    if (wanted && namedType !== undefined && namedType !== wanted) return [];
 
     // The delivery carries a summary; the job read carries every column the
     // actions return. Re-reading keeps one row shape across the whole piece,
     // which is what lets a table built on Get Job work here unchanged.
     const job = await getJobById(context.auth.secret_text, jobId);
+    if (wanted && job.type !== wanted) return [];
     return [toJobRow(job)];
   },
 
@@ -128,6 +136,10 @@ export const finishedJob = createTrigger({
       HttpMethod.GET,
       '/jobs?limit=5&sort=created&order=desc&status=complete',
     );
-    return page.data.filter((job) => isTerminal(job.status)).map(toJobRow);
+    // GET /jobs (the list) omits deliveries, so this reports the column as not
+    // available rather than claiming an empty list.
+    return page.data
+      .filter((job) => isTerminal(job.status))
+      .map((job) => ({ ...toJobRow(job), deliveries: null }));
   },
 });

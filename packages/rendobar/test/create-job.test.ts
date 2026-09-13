@@ -1,8 +1,8 @@
 /// <reference types="vitest/globals" />
-import { vi } from 'vitest';
-import { httpClient, HttpMethod } from '@activepieces/pieces-common';
+import { HttpMethod } from '@activepieces/pieces-common';
 import { ExecutionType, createMockActionContext } from '@activepieces/pieces-framework';
 import { createJob } from '../src/lib/actions/create-job';
+import { stubApi, type Sent } from './helpers';
 
 /**
  * The action's decision tree, run against the real framework.
@@ -17,19 +17,6 @@ import { createJob } from '../src/lib/actions/create-job';
  * waitpoint piece in the catalog has tests. The hooks are supplied below rather
  * than the action being reshaped to suit the helper.
  */
-
-type Sent = { method: HttpMethod; url: string; body?: unknown };
-
-function stubApi(reply: (sent: Sent) => { status: number; body: unknown }) {
-  const sent: Sent[] = [];
-  vi.spyOn(httpClient, 'sendRequest').mockImplementation(async (request: any) => {
-    const record: Sent = { method: request.method, url: request.url, body: request.body };
-    sent.push(record);
-    const { status, body } = reply(record);
-    return { status, body, headers: {} } as any;
-  });
-  return sent;
-}
 
 const RESUME_URL = 'https://cloud.activepieces.com/api/v1/resume/wp_1';
 
@@ -186,5 +173,46 @@ describe('resuming', () => {
 
     // Anything can POST to a resume URL, so this must be a clear step error.
     await expect(createJob.run(ctx)).rejects.toThrow(/names no job/);
+  });
+});
+
+describe('destinations', () => {
+  // Not waiting, so the step submits once and returns without a waitpoint.
+  const submit = async (props: Record<string, unknown>) => {
+    const sent = stubApi(() => ACCEPTED);
+    await createJob.run(context({ waitForResult: false, ...props }).ctx);
+    return sent.find((s) => s.method === HttpMethod.POST && s.url.endsWith('/jobs'))?.body as { destinations?: string[]; idempotencyKey: string };
+  };
+
+  it('sends the chosen connections as destinations, sharing one path', async () => {
+    const body = await submit({ deliverTo: ['prod-media', 'archive'], deliveryPath: '/exports' });
+    expect(body.destinations).toEqual(['storage://prod-media/exports', 'storage://archive/exports']);
+  });
+
+  it('sends no destinations key when nothing is chosen, so the account default applies', async () => {
+    expect(await submit({})).not.toHaveProperty('destinations');
+  });
+
+  it('gives two submissions that differ only by destination two idempotency keys', async () => {
+    const first = await submit({ deliverTo: ['prod-media'] });
+    vi.restoreAllMocks();
+    const second = await submit({ deliverTo: ['archive'] });
+    expect(first.idempotencyKey).not.toBe(second.idempotencyKey);
+  });
+
+  it('refuses a path with nothing chosen under Deliver To, before any request', async () => {
+    const sent = stubApi(() => ACCEPTED);
+    await expect(
+      createJob.run(context({ waitForResult: false, deliveryPath: '/exports' }).ctx),
+    ).rejects.toThrow(/Choose one, or clear the path/);
+    expect(sent).toHaveLength(0);
+  });
+
+  it('refuses a Deliver To that did not resolve to a list, before any request', async () => {
+    const sent = stubApi(() => ACCEPTED);
+    await expect(
+      createJob.run(context({ waitForResult: false, deliverTo: 'prod-media' }).ctx),
+    ).rejects.toThrow(/did not resolve to a list/);
+    expect(sent).toHaveLength(0);
   });
 });

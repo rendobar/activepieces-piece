@@ -13,7 +13,7 @@ import { type OutputSchema } from '@activepieces/pieces-framework';
  * duration as a duration, nanodollars stop looking like a nine-digit integer.
  */
 
-/** The 30-column row every job-shaped action and trigger returns. */
+/** The 31-column row every job-shaped action and trigger returns. */
 export const JOB_OUTPUT_SCHEMA: OutputSchema = {
   fields: [
     { key: 'status', label: 'Status' },
@@ -42,6 +42,20 @@ export const JOB_OUTPUT_SCHEMA: OutputSchema = {
         { key: 'path', label: 'Path' },
         { key: 'size', label: 'Size', format: 'filesize' },
         { key: 'type', label: 'Type' },
+      ],
+    },
+    {
+      key: 'deliveries',
+      label: 'Storage Deliveries',
+      description: 'Run a Media Job, Get Job and Finished Job report it. Job lists such as Find Jobs and Finished Job (Polling) do not.',
+      labelKey: 'storageId',
+      listItems: [
+        { key: 'storageId', label: 'Connection' },
+        { key: 'status', label: 'Delivery Status' },
+        { key: 'path', label: 'Path in Bucket' },
+        { key: 'url', label: 'URL', format: 'url' },
+        { key: 'reason', label: 'Reason' },
+        { key: 'renamed', label: 'Renamed', format: 'boolean' },
       ],
     },
   ],
@@ -113,5 +127,38 @@ export const SHARE_OUTPUT_SCHEMA: OutputSchema = {
     { key: 'already_shared', label: 'Was Already Shared', format: 'boolean' },
     { key: 'createdAt', label: 'Shared At', format: 'datetime' },
     { key: 'shareId', label: 'Share ID' },
+  ],
+};
+
+/** Find Storage Connections returns an array of these rows. */
+export const STORAGE_LIST_OUTPUT_SCHEMA: OutputSchema = {
+  itemLabel: '{id} · {provider}',
+  fields: [
+    { key: 'id', label: 'Connection ID' },
+    { key: 'provider', label: 'Provider' },
+    { key: 'bucket', label: 'Bucket' },
+    { key: 'region', label: 'Region' },
+    { key: 'access', label: 'Access' },
+    { key: 'default_destination', label: 'Default Destination', format: 'boolean' },
+    { key: 'pending', label: 'Still Being Set Up', format: 'boolean' },
+  ],
+};
+
+/** List Storage Files. Both lists share the row shape a job destination reads. */
+export const STORAGE_FILES_OUTPUT_SCHEMA: OutputSchema = {
+  fields: [
+    { key: 'folders', label: 'Folders', labelKey: 'path', listItems: [{ key: 'path', label: 'Path' }, { key: 'uri', label: 'Storage URI' }] },
+    {
+      key: 'files',
+      label: 'Files',
+      labelKey: 'path',
+      listItems: [
+        { key: 'path', label: 'Path' },
+        { key: 'size_bytes', label: 'Size', format: 'filesize' },
+        { key: 'last_modified', label: 'Last Modified', format: 'datetime' },
+        { key: 'uri', label: 'Storage URI' },
+      ],
+    },
+    { key: 'truncated', label: 'More Files Than Listed', format: 'boolean' },
   ],
 };

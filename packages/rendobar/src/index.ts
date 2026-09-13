@@ -10,6 +10,8 @@ import { uploadFile } from './lib/actions/upload-file';
 import { findJobs } from './lib/actions/find-jobs';
 import { getJobLogs } from './lib/actions/get-job-logs';
 import { getAccount } from './lib/actions/get-account';
+import { findStorageConnections } from './lib/actions/find-storage-connections';
+import { listStorageFiles } from './lib/actions/list-storage-files';
 import { finishedJob } from './lib/triggers/finished-job';
 import { finishedJobPolling } from './lib/triggers/finished-job-polling';
 
@@ -35,6 +37,8 @@ export const rendobar = createPiece({
     getAccount,
     cancelJob,
     shareOutput,
+    findStorageConnections,
+    listStorageFiles,
     createCustomApiCallAction({
       baseUrl: () => BASE_URL,
       auth: rendobarAuth,
