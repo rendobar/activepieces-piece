@@ -44,7 +44,7 @@ export const finishedJob = createTrigger({
   description: 'Starts the flow the moment a media job finishes.',
   aiMetadata: {
     description:
-      "Fires once per Rendobar job that reaches a finished state, carrying that job's output file URL, cost and timing.",
+      "Fires once per Rendobar job that reaches a finished state, carrying that job's output file URL, cost and timing. Deliveries start after the job finishes, so to act once they land, use Finished Job with the Storage deliveries settled outcome.",
   },
   type: TriggerStrategy.WEBHOOK,
   outputSchema: JOB_OUTPUT_SCHEMA,

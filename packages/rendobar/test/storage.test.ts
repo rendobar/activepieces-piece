@@ -31,10 +31,18 @@ describe('connectionDropdown', () => {
     expect(state.options.map((o) => o.value)).toEqual(['prod-media', 'raw', 'new-aws']);
   });
 
-  it('says to connect a bucket when none qualifies, and to connect the account without auth', async () => {
-    answer([CONNECTIONS[1]]);
+  it('says to connect a bucket when there are none at all, and to connect the account without auth', async () => {
+    answer([]);
     expect(await connectionDropdown('rb_key', true)).toMatchObject({ disabled: true, placeholder: expect.stringContaining('Storage page') });
     expect(await connectionDropdown(undefined, true)).toMatchObject({ disabled: true, placeholder: expect.stringContaining('connect your account') });
+  });
+
+  it('explains that existing connections are read only or still pending, rather than missing, when none qualify as a destination', async () => {
+    answer([CONNECTIONS[1], CONNECTIONS[2]]);
+    expect(await connectionDropdown('rb_key', true)).toMatchObject({
+      disabled: true,
+      placeholder: expect.stringMatching(/read only|still being set up/i),
+    });
   });
 
   it('turns a key without storage access into the fix', async () => {

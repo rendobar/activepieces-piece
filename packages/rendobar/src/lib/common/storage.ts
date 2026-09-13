@@ -37,9 +37,17 @@ export async function listConnections(token: string): Promise<StorageConnection[
 export async function connectionDropdown(token: string | undefined, writableOnly: boolean): Promise<DropdownState<string>> {
   if (!token) return { disabled: true, options: [], placeholder: 'Please connect your account first' };
   try {
-    const usable = (await listConnections(token)).filter((c) => !writableOnly || (c.access !== 'read' && c.pending !== true));
+    const all = await listConnections(token);
+    const usable = all.filter((c) => !writableOnly || (c.access !== 'read' && c.pending !== true));
     if (usable.length === 0) {
-      return { disabled: true, options: [], placeholder: 'No storage to use here. Connect a bucket on the Storage page first.' };
+      // Two different problems land in the same empty list. Naming which one
+      // saves a trip to the Storage page to discover a bucket is already there,
+      // just not writable yet.
+      const placeholder =
+        writableOnly && all.length > 0
+          ? 'Every connected bucket here is read only or still being set up. Connect a writable bucket on the Storage page, or wait for one to finish.'
+          : 'No storage to use here. Connect a bucket on the Storage page first.';
+      return { disabled: true, options: [], placeholder };
     }
     return { disabled: false, options: usable.map((c) => ({ label: `${c.id} (${c.provider}, ${c.bucket})`, value: c.id })) };
   } catch (error) {

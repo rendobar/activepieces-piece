@@ -25,7 +25,7 @@ export const createJob = createAction({
   audience: 'both',
   aiMetadata: {
     description:
-      'Run one media or AI job on Rendobar (transcode, compress, watermark, caption, probe, generate) and return the finished file URL. Pick the job type first, then fill the parameters it declares. Waiting pauses the flow until Rendobar calls back, so a job that runs for hours is fine. Each distinct call submits a new billable job; a retry of the same call settles on the job it already created rather than paying twice.',
+      'Run one media or AI job on Rendobar (transcode, compress, watermark, caption, probe, generate) and return the finished file URL. Pick the job type first, then fill the parameters it declares. Waiting pauses the flow until Rendobar calls back, so a job that runs for hours is fine. Each distinct call submits a new billable job; a retry of the same call settles on the job it already created rather than paying twice. Deliveries start after the job finishes, so to act once they land, use Finished Job with the Storage deliveries settled outcome.',
     idempotent: true,
   },
   outputSchema: JOB_OUTPUT_SCHEMA,
@@ -123,7 +123,7 @@ export const createJob = createAction({
     deliverTo: Property.MultiSelectDropdown({
       displayName: 'Deliver To',
       description:
-        "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set.",
+        "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set. Deliveries start after the job finishes, so to act once they land, use Finished Job with the Storage deliveries settled outcome.",
       required: false,
       auth: rendobarAuth,
       refreshers: [],

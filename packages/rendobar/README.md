@@ -36,8 +36,8 @@ Source and issues live at
 ## Triggers
 
 **Finished Job** registers a webhook and starts the flow the moment a job
-finishes. **Finished Job (Polling)** does the same on a timer, for an
-Activepieces that Rendobar cannot reach from the internet. Set Outcome to **Storage deliveries settled** to start the flow once every bucket chosen under Deliver To has been written.
+finishes. Set Outcome to **Storage deliveries settled** to start the flow once every bucket chosen under Deliver To has been written. **Finished Job (Polling)** does the same on a timer, for an
+Activepieces that Rendobar cannot reach from the internet.
 
 ## Waiting
 

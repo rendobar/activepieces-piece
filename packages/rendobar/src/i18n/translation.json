@@ -8,6 +8,7 @@
   "Body": "Body",
   "Body Type": "Body Type",
   "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set.": "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set.",
+  "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set. Deliveries start after the job finishes, so to act once they land, use Finished Job with the Storage deliveries settled outcome.": "Buckets connected on Rendobar's Storage page to write the output to once the job finishes. Leave empty to use the account's default destination, if one is set. Deliveries start after the job finishes, so to act once they land, use Finished Job with the Storage deliveries settled outcome.",
   "Cancel Job": "Cancel Job",
   "Cancelled": "Cancelled",
   "Checks every few minutes for finished jobs. Use when this Activepieces cannot receive webhooks.": "Checks every few minutes for finished jobs. Use when this Activepieces cannot receive webhooks.",
