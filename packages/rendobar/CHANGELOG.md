@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.0](https://github.com/rendobar/activepieces-piece/compare/v0.1.2...v0.2.0) (2026-09-13)
+
+
+### Features
+
+* connected storage for Activepieces ([#19](https://github.com/rendobar/activepieces-piece/issues/19)) ([589ed6d](https://github.com/rendobar/activepieces-piece/commit/589ed6da33757bd2a9c9f6bbbd44c63fed49421e))
+
+## [0.1.2](https://github.com/rendobar/activepieces-piece/compare/v0.1.1...v0.1.2) (2026-09-06)
+
+
+### Bug Fixes
+
+* drop a fallback that can no longer be reached ([#8](https://github.com/rendobar/activepieces-piece/issues/8)) ([e89c54d](https://github.com/rendobar/activepieces-piece/commit/e89c54d5145def499a5f08a3c44650db35fe4a9a))
+* send the content type the API derived instead of guessing it ([#7](https://github.com/rendobar/activepieces-piece/issues/7)) ([26f83db](https://github.com/rendobar/activepieces-piece/commit/26f83dbed42dd40087b7e7080a806701651c5a8d))
+
 ## [0.1.1](https://github.com/rendobar/activepieces-piece/compare/v0.1.0...v0.1.1) (2026-09-02)
 
 
