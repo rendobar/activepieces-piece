@@ -34,3 +34,38 @@ describe('Finished Job trigger, deliveries settled', () => {
     expect(await run('compress.target')).toEqual([]);
   });
 });
+
+describe('Finished Job trigger, outcome subscriptions', () => {
+  it.each([
+    [undefined, ['job.completed']],
+    ['complete', ['job.completed']],
+    ['failed', ['job.failed']],
+    ['any', ['job.completed', 'job.failed', 'job.cancelled']],
+    ['delivered', ['job.deliveries_settled']],
+  ] as const)('pins outcome %s to %j', async (outcome, events) => {
+    const sent = stubApi(() => ({ status: 201, body: { data: { id: 'whe_1' } } }));
+    await finishedJob.onEnable({
+      auth: { secret_text: 'rb_key' },
+      propsValue: { outcome },
+      webhookUrl: 'https://cloud.activepieces.com/api/v1/webhooks/flow_1',
+      store: { put: vi.fn(), get: vi.fn(), delete: vi.fn() },
+    } as never);
+    expect(sent[0]?.body).toMatchObject({ subscribedEvents: events });
+  });
+});
+
+describe('Finished Job trigger, Job Type filter on an event that names its type', () => {
+  it('drops a mismatched job.completed event before reading the job at all', async () => {
+    const sent = stubApi(() => {
+      throw new Error('should not have read the job: the envelope already named a different type');
+    });
+    const envelope = { event: 'job.completed', data: { jobId: 'job_1', jobType: 'compress.target' } };
+    const rows = await finishedJob.run({
+      auth: { secret_text: 'rb_key' },
+      propsValue: { outcome: 'complete', jobType: 'ffmpeg' },
+      payload: { body: envelope },
+    } as never);
+    expect(rows).toEqual([]);
+    expect(sent).toHaveLength(0);
+  });
+});
