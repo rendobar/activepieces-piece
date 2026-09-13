@@ -12,6 +12,7 @@ import {
   destinationUris,
   requireDeliveryTarget,
   storageAdvice,
+  encodeStoragePath,
 } from "../src/lib/common/pure.js";
 import { stringsFrom } from "../../../scripts/lib/i18n.mjs";
 
@@ -332,6 +333,29 @@ describe("a job that failed", () => {
   });
 });
 
+describe('encodeStoragePath', () => {
+  it('escapes a hash so it cannot read as a URI fragment', () => {
+    expect(encodeStoragePath('raw/clip#1.mp4')).toBe('raw/clip%231.mp4');
+  });
+
+  it('escapes a literal percent before it can be mistaken for an escape', () => {
+    expect(encodeStoragePath('50%.mp4')).toBe('50%25.mp4');
+  });
+
+  it('escapes a question mark so it cannot read as a query string', () => {
+    expect(encodeStoragePath('a?b.mp4')).toBe('a%3Fb.mp4');
+  });
+
+  it('leaves a percent already followed by ?/# untouched twice, escaping % first', () => {
+    // %3F is itself a %, so it must become %253F, not %3F unchanged.
+    expect(encodeStoragePath('100%?.mp4')).toBe('100%25%3F.mp4');
+  });
+
+  it('leaves spaces, unicode and template braces alone', () => {
+    expect(encodeStoragePath('raw exports/日本語 café/{jobId}.mp4')).toBe('raw exports/日本語 café/{jobId}.mp4');
+  });
+});
+
 describe('destinationUris', () => {
   it('gives each chosen connection its own storage URI', () => {
     expect(destinationUris(['prod-media', 'archive'], '')).toEqual(['storage://prod-media', 'storage://archive']);
@@ -351,6 +375,12 @@ describe('destinationUris', () => {
 
   it('skips blanks and names a repeated connection once', () => {
     expect(destinationUris(['prod-media', ' ', 'prod-media', 7], '')).toEqual(['storage://prod-media']);
+  });
+
+  it('escapes %, ? and # in the delivery path so the URI parses back to the same path', () => {
+    expect(destinationUris(['prod-media'], 'raw/clip#1.mp4')).toEqual(['storage://prod-media/raw/clip%231.mp4']);
+    expect(destinationUris(['prod-media'], '50%.mp4')).toEqual(['storage://prod-media/50%25.mp4']);
+    expect(destinationUris(['prod-media'], 'a?b.mp4')).toEqual(['storage://prod-media/a%3Fb.mp4']);
   });
 });
 

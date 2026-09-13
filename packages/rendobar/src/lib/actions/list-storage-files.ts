@@ -3,7 +3,7 @@ import { HttpMethod } from '@activepieces/pieces-common';
 import { rendobarAuth } from '../auth';
 import { rendobar } from '../common/client';
 import { connectionDropdown } from '../common/storage';
-import { storageAdvice, requireStorageId } from '../common/pure';
+import { storageAdvice, requireStorageId, encodeStoragePath } from '../common/pure';
 import { STORAGE_FILES_OUTPUT_SCHEMA } from '../common/output-schemas';
 
 type ObjectsPage = {
@@ -62,7 +62,7 @@ export const listStorageFiles = createAction({
     const storageId = requireStorageId(context.propsValue.storageId);
     const folder = normalizeFolder(context.propsValue.folder);
     const want = Math.max(1, context.propsValue.limit ?? 100);
-    const uri = (key: string) => `storage://${storageId}/${key}`;
+    const uri = (key: string) => `storage://${storageId}/${encodeStoragePath(key)}`;
     const folders: { path: string; uri: string }[] = [];
     const files: { path: string; size_bytes: number; last_modified: number | null; uri: string }[] = [];
     let cursor: string | null = null;
