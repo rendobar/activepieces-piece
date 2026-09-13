@@ -1,11 +1,13 @@
 # Changelog
 
-## [0.2.0](https://github.com/rendobar/activepieces-piece/compare/v0.1.1...v0.2.0) (2026-09-13)
+## [0.2.0](https://github.com/rendobar/activepieces-piece/compare/v0.1.2...v0.2.0) (2026-09-13)
 
 
 ### Features
 
 * connected storage for Activepieces ([#19](https://github.com/rendobar/activepieces-piece/issues/19)) ([589ed6d](https://github.com/rendobar/activepieces-piece/commit/589ed6da33757bd2a9c9f6bbbd44c63fed49421e))
+
+## [0.1.2](https://github.com/rendobar/activepieces-piece/compare/v0.1.1...v0.1.2) (2026-09-06)
 
 
 ### Bug Fixes
