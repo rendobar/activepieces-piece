@@ -127,3 +127,36 @@ export const SHARE_OUTPUT_SCHEMA: OutputSchema = {
     { key: 'shareId', label: 'Share ID' },
   ],
 };
+
+/** Find Storage Connections returns an array of these rows. */
+export const STORAGE_LIST_OUTPUT_SCHEMA: OutputSchema = {
+  itemLabel: '{id} · {provider}',
+  fields: [
+    { key: 'id', label: 'Connection ID' },
+    { key: 'provider', label: 'Provider' },
+    { key: 'bucket', label: 'Bucket' },
+    { key: 'region', label: 'Region' },
+    { key: 'access', label: 'Access' },
+    { key: 'default_destination', label: 'Default Destination', format: 'boolean' },
+    { key: 'pending', label: 'Still Being Set Up', format: 'boolean' },
+  ],
+};
+
+/** List Storage Files. Both lists share the row shape a job destination reads. */
+export const STORAGE_FILES_OUTPUT_SCHEMA: OutputSchema = {
+  fields: [
+    { key: 'folders', label: 'Folders', labelKey: 'path', listItems: [{ key: 'path', label: 'Path' }, { key: 'uri', label: 'Storage URI' }] },
+    {
+      key: 'files',
+      label: 'Files',
+      labelKey: 'path',
+      listItems: [
+        { key: 'path', label: 'Path' },
+        { key: 'size_bytes', label: 'Size', format: 'filesize' },
+        { key: 'last_modified', label: 'Last Modified', format: 'datetime' },
+        { key: 'uri', label: 'Storage URI' },
+      ],
+    },
+    { key: 'truncated', label: 'More Files Than Listed', format: 'boolean' },
+  ],
+};
