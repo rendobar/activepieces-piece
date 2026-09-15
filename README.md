@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@rendobar/piece-rendobar">npm</a> &nbsp;&middot;&nbsp;
-  <a href="https://rendobar.com/docs">Docs</a> &nbsp;&middot;&nbsp;
+  <a href="https://rendobar.com/docs/automation/activepieces">Docs</a> &nbsp;&middot;&nbsp;
   <a href="https://www.activepieces.com">Activepieces</a>
 </p>
 
