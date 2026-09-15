@@ -1,7 +1,7 @@
 {
   "name": "@rendobar/piece-rendobar",
   "version": "0.2.1",
-  "description": "Rendobar media processing for Activepieces: submit, track and cancel media jobs, upload files, read job logs and account credits, and trigger on job events.",
+  "description": "Run FFmpeg commands, compose, compress and caption videos, and generate, edit or upscale images in Activepieces flows",
   "license": "MIT",
   "homepage": "https://rendobar.com",
   "repository": {
